@@ -1,1 +1,76 @@
 # Password-Cracking-Labs
+Write-ups documenting my completion of the initial project modules from the NetworkWalks Academy Cybersecurity & Ethical Hacking course. All labs use a training file provided by the course (`My Locked PDF1.pdf` / `networkwalks_flag1.pdf`) — a password-protected PDF whose password is intentionally weak, for the purpose of learning password-auditing techniques.
+
+> ⚠️ **Scope & ethics note:** These exercises were performed on a sample file supplied for training purposes by the course provider, in a lab/VM environment. Password cracking should only ever be performed on files/systems you own or are explicitly authorized to test.
+
+## Background
+
+Password cracking is the process of recovering a password from stored data or a protected file, used by security professionals to test password strength. Files such as PDF, ZIP, and Office documents store their password as a **hash** — a one-way scrambled representation. To recover the password you extract that hash from the file, then run it through a cracking tool that hashes candidate words/passwords and compares them against it (a *dictionary attack*).
+
+- **Target file:** `My Locked PDF1.pdf` (a.k.a. `networkwalks_flag1.pdf`), 65.2 KB, PDF encryption revision 4 / V4, 128-bit key.
+
+
+## Lab 1 — Password Cracking with John the Ripper (JTR) & Johnny
+
+**Task:** Crack the password of `My Locked PDF1.pdf` using JTR John and JTR Johnny on Windows.
+
+**Tools:**
+- [John the Ripper](https://www.openwall.com/john/) (jumbo build, Windows binaries)
+- [Johnny](https://openwall.info/wiki/john/johnny) — GUI front-end for John the Ripper
+- [OnlineHashCrack PDF Hash Extractor](https://www.onlinehashcrack.com/tools-pdf-hash-extractor.php) — pulls the crackable hash out of the PDF
+
+**Steps:**
+1. Downloaded John the Ripper (jumbo, Windows x64) and installed the Johnny GUI, pointing Johnny's settings at `john.exe` inside the extracted `run` folder.
+2. Uploaded `My Locked PDF1.pdf` to the OnlineHashCrack PDF Hash Extractor to convert the file's password protection into a crackable hash (`pdf2john`/`pdf2hashcat` format).
+3. Copied the resulting hash — starting with `$.....*...` — into Notepad and saved it as `hash1.txt`.
+4. In Johnny: **Open password file** → selected `hash1.txt`. The hash loaded correctly, formatted as `PDF`.
+5. Clicked **Start new attack** and let Johnny/John run its default cracking mode against the hash.
+6. John recovered the password within the run; Johnny displayed it directly in the password column.
+7. Opened `My Locked PDF1.pdf` in Adobe Acrobat Reader and entered the recovered password to confirm it unlocked the document.
+
+**Result:** Password cracked — `password1`. The PDF opened successfully.
+<img width="600" height="337" alt="Screenshot (268)" src="https://github.com/user-attachments/assets/6f73e659-0495-43fe-8273-24c5d37c334d" />
+<img width="600" height="337" alt="Screenshot (266)" src="https://github.com/user-attachments/assets/fb952a21-8049-4c46-9e59-f6ef20a6552b" />
+
+
+**Learnings:**
+- `pdf2john` (or an equivalent online extractor) bridges PDF password protection into a format John understands.
+- Johnny is just a GUI wrapper around the John the Ripper binary; all the cracking work happens in `john.exe`.
+- A weak, dictionary-word password like `password1` is cracked almost instantly — reinforcing why longer, non-dictionary passwords matter.
+
+---
+
+## Lab 2 — Password Cracking with NetworkWalks Browser Tools
+
+**Task:** Crack the password of `My Locked PDF1.pdf` using the NetworkWalks Hash Calculator and Password Cracker (both free, browser-based, no install required).
+
+**Tools:**
+- [NetworkWalks Hash Calculator](https://networkwalks.com/hash-calculator/) — generates MD5/SHA family hashes and extracts a crackable hash from a password-protected PDF, all client-side in the browser.
+- [NetworkWalks Password Cracker](https://networkwalks.com/password-cracker/) — runs a dictionary attack against a pasted `$pdf$` hash, either with its built-in 100-word list or an uploaded wordlist.
+
+**Steps:**
+1. Downloaded the encrypted PDF (`My Locked PDF1.pdf`) from the lab page.
+2. Opened the NetworkWalks Hash Calculator and switched to the **PDF** tab.
+3. Uploaded the locked PDF. The tool parsed it locally in the browser and reported it as encrypted, extracting a crackable hash.
+4. Copied the full hash value.
+5. Opened the NetworkWalks Password Cracker, pasted the hash into the **PDF HASH** field.
+6. Left the built-in 100-password list active and clicked **Start Cracking**.
+7. Watched the tool try candidate passwords (`service`, `canada`, `hockey`, `killer`, `george`, `asdfgh`, `xxxxxx`, `qwertyuiop`, `111222`, …) live in the console output.
+8. On try #91 it matched: **`[+] MATCH password1`**. The tool displayed **"PASSWORD CRACKED SUCCESSFULLY — password1"**.
+9. Opened `My Locked PDF1.pdf` and entered `password1` to unlock it, confirming the crack.
+<img width="600" height="337" alt="Screenshot (271)" src="https://github.com/user-attachments/assets/a0d3d7b0-97ed-4a68-a3dc-0b63b1ace99c" />
+
+<img width="600" height="337" alt="Screenshot (272)" src="https://github.com/user-attachments/assets/8d0598b6-ff42-48b8-a7b3-8ccc78b5e9f3" />
+
+**Result:** Password cracked — `password1` (matched at 91/100 words tried, ~9 passwords/sec).
+
+**Learnings:**
+- Both NetworkWalks tools run entirely client-side (Web Crypto API for hashing) — no file or text is uploaded to a server, per the tool's own disclosure.
+- This mirrors the JTR workflow from Lab 1 conceptually (extract hash → dictionary attack) but packages it as a two-step, no-install browser experience for beginners.
+
+---
+
+## References
+[www.networkwalks.com](https://www.networkwalks.com)
+
+```
